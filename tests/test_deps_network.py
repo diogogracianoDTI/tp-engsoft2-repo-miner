@@ -33,3 +33,42 @@ def test_analyze_dependencies_offline(tmp_path: Path):
     report = deps_mod.analyze_dependencies(tmp_path, offline=True)
     assert report["summary"]["packages_total"] == 1
     assert report["packages"][0]["latest_version"] is None
+
+
+def test_latest_pypi_version_non_200(monkeypatch):
+    """_latest_pypi_version deve retornar None se o PyPI responder com erro."""
+
+    from repo_miner import deps as deps_mod
+
+    def fake_get(url, timeout=15):
+        # Simula um erro no servidor do PyPI
+        return DummyResp(status_code=500, json_data={})
+
+    # Substitui o módulo requests dentro de deps_mod por um "fake"
+    monkeypatch.setattr(
+        deps_mod,
+        "requests",
+        type("R", (), {"get": staticmethod(fake_get)}),
+    )
+
+    ver = deps_mod._latest_pypi_version("qualquer-coisa")
+    assert ver is None
+
+
+def test_osv_query_non_200(monkeypatch):
+    """_osv_query deve retornar lista vazia se a API do OSV falhar."""
+
+    from repo_miner import deps as deps_mod
+
+    def fake_post(url, data=None, headers=None, timeout=20):
+        # Simula falha na API do OSV
+        return DummyResp(status_code=500, json_data={})
+
+    monkeypatch.setattr(
+        deps_mod,
+        "requests",
+        type("R", (), {"post": staticmethod(fake_post)}),
+    )
+
+    vulns = deps_mod._osv_query("pacote-x", "1.0.0")
+    assert vulns == []
