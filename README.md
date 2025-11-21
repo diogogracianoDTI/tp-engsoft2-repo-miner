@@ -13,7 +13,7 @@ Ferramenta de linha de comando para minerar repositórios e identificar sinais d
 
 A CLI calcula um “termômetro de manutenção” a partir de:
 
-- Atividade recente: total de commits em uma janela de tempo, dias desde o último commit, mediana de dias entre commits, merges.
+- Atividade recente: total de commits em uma janela de tempo, dias desde o último commit, mediana de dias entre commits, merges, top autores com mais commits e mais recentes.
 - Dependências: quais estão desatualizadas (comparação com o PyPI) e vulnerabilidades reportadas (OSV).
 
 Os resultados podem ser exibidos no terminal ou exportados em JSON/CSV.
@@ -56,6 +56,48 @@ repo-miner --help
 ```bash
 repo-miner activity /caminho/para/repo --since-days 365
 repo-miner activity /caminho/para/repo --since-days 365 --json-out atividade.json
+```
+
+Exemplo de saída (campos principais):
+
+```json
+{
+  "commits_total": 123,
+  "authors_total": 8,
+  "days_since_last_commit": 2,
+  "median_days_between_commits": 1,
+  "merge_commits": 10,
+  "top_authors": [
+    { "author": "dev1@example.com", "commits": 40 },
+    { "author": "dev2@example.com", "commits": 30 },
+    { "author": "dev3@example.com", "commits": 20 },
+    { "author": "dev4@example.com", "commits": 18 },
+    { "author": "dev5@example.com", "commits": 15 }
+  ],
+  "recent_authors": [
+    {
+      "author": "dev2@example.com",
+      "days_since_last_commit": 0,
+      "commits": 30
+    },
+    {
+      "author": "dev3@example.com",
+      "days_since_last_commit": 1,
+      "commits": 20
+    },
+    {
+      "author": "dev5@example.com",
+      "days_since_last_commit": 3,
+      "commits": 15
+    },
+    {
+      "author": "dev4@example.com",
+      "days_since_last_commit": 4,
+      "commits": 18
+    },
+    { "author": "dev1@example.com", "days_since_last_commit": 5, "commits": 40 }
+  ]
+}
 ```
 
 - Analisar dependências do projeto atual (detecta `requirements.txt` e/ou `pyproject.toml`):
