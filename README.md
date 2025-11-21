@@ -45,6 +45,38 @@ Isso instalará o comando `repo-miner`.
 
 ## Uso
 
+### Requisitos para Análise de Dependências
+
+Para que o comando `repo-miner deps` consiga analisar suas dependências, o projeto precisa conter pelo menos um dos manifestos abaixo na raiz (diretório passado ao comando):
+
+1. `requirements.txt`
+
+- Formato suportado: linhas simples `pacote==versão` ou apenas `pacote`.
+- Linhas com comentários iniciados em `#` são ignoradas.
+- Linhas não reconhecidas são descartadas silenciosamente (não causam erro).
+
+2. `pyproject.toml`
+
+- Padrão PEP 621: chave `[project]` com lista `dependencies = ["pkg==1.2.3", "outropacote>=0.5.0"]`.
+- Formato Poetry: `[tool.poetry.dependencies]` (exceto a entrada `python`). Valores simples como `requests = "2.31.0"` geram `requests==2.31.0`; intervalos como `uvicorn = ">=0.20.0"` são preservados.
+
+O parser atual não interpreta:
+
+- Extras (`package[extra]`)
+- Marcadores de ambiente (`; python_version<"3.11"`)
+- Arquivos encadeados via `-r other.txt` em `requirements.txt`
+- Apenas `setup.py` sem `pyproject.toml`
+
+Se nenhum manifesto for localizado, o relatório retorna lista vazia e inclui um campo `warning` indicando ausência de dependências detectadas.
+
+Para analisar um repositório remoto do GitHub diretamente:
+
+```bash
+repo-miner deps https://github.com/org/repo --offline
+```
+
+O comando faz clone raso (`git clone --depth 1`) em diretório temporário (pode desativar com `--no-auto-clone`).
+
 Ajuda geral:
 
 ```bash
